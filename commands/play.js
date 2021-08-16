@@ -35,6 +35,12 @@ function createYTDLAudioResource(url) {
     });
 }
 
+function check(url) {
+    var youtube = /^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/
+    if(youtube.test(url)) return true
+    return false
+}
+
 module.exports = {
 	name: 'Play',
 	description: 'Play a youtube video in voice channel',
@@ -43,7 +49,7 @@ module.exports = {
 	args: true,
 	async execute(message, args) {
         const { sublist } = await import('../sublist.mjs');
-        if(message.member.voice.channel.type === 'GUILD_VOICE') {
+        if(message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
             let sp;
             const channel = message.member.voice.channel;
 
