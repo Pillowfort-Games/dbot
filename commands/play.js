@@ -1,4 +1,6 @@
 const { raw } = require('youtube-dl-exec');
+const ytdl = require('ytdl-core-discord');
+const { MessageEmbed } = require('discord.js');
 const { AudioPlayerStatus, joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, createAudioResource, demuxProbe } = require('@discordjs/voice');
 
 function createYTDLAudioResource(url) {
@@ -42,7 +44,7 @@ module.exports = {
 	async execute(message, args) {
         const { sublist } = await import('../sublist.mjs');
         if(message.member.voice.channel.type === 'GUILD_VOICE') {
-
+            let sp;
             const channel = message.member.voice.channel;
 
             const connection = joinVoiceChannel({
@@ -51,15 +53,32 @@ module.exports = {
                 adapterCreator: channel.guild.voiceAdapterCreator,
             });
 
+            if(!sublist.get(message.guild.id)) {
+                message.channel.send('Starting Player...').then(msg => { sp = msg.id })
+            } else {
+
+            };
+
             const player = createAudioPlayer({
                 behaviors: {
                     noSubscriber: NoSubscriberBehavior.Pause,
                 },
             });
-
             const resource = await createYTDLAudioResource(args[0]);
+
+            player.on(AudioPlayerStatus.Buffering, async playerstate => {
+                await ytdl.getInfo(args[0]).then(info => {
+                    message.channel.messages.fetch(sp).then(oldmsg => {
+                        const embi = new MessageEmbed()
+                            .setColor('#A30DAC')
+                            .setDescription(`Now Playing: [${info.videoDetails.title}](${args[0]}) requested by ${message.member.displayName}`);
+
+                        oldmsg.delete().then(msg => { message.channel.send({ embeds: [embi] }) });
+                    });
+                });
+            });
+
             player.play(resource);
-            message.channel.send('Now Playing: ' + args[0]);
 
             const subscription = connection.subscribe(player);
             sublist.set(message.guild.id, subscription);
