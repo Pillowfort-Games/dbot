@@ -49,7 +49,7 @@ module.exports = {
 	args: true,
 	async execute(message, args) {
         const { sublist } = await import('../sublist.mjs');
-        if(message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
+        if(message.member.voice.channel && message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
             let sp;
             const channel = message.member.voice.channel;
 
@@ -93,6 +93,10 @@ module.exports = {
                 connection.disconnect();
                 sublist.delete(message.guild.id);
             })
-        }
+        } else if(!message.member.voice.channel) {
+            message.channel.send('Please be in a voice channel to use this command.');
+        } else if(message.member.voice.channel.type === 'GUILD_VOICE' && !check(args[0])) {
+            message.channel.send('You didn\'t provide a valid youtube url.');
+        };
 	}
 };
