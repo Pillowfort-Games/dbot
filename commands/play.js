@@ -73,7 +73,7 @@ module.exports = {
             const resource = await createYTDLAudioResource(args[0]);
 
             player.on(AudioPlayerStatus.Buffering, async playerstate => {
-                await ytdl.getInfo(args[0]).then(info => {
+                ytdl.getInfo(args[0]).then(info => {
                     message.channel.messages.fetch(sp).then(oldmsg => {
                         const embi = new MessageEmbed()
                             .setColor('#A30DAC')
