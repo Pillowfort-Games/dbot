@@ -66,6 +66,7 @@ module.exports = {
             player.on(AudioPlayerStatus.Idle, playerstate => {
                 subscription.unsubscribe();
                 connection.disconnect();
+                sublist.delete(message.guild.id);
             })
         }
 	}
