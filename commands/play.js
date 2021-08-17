@@ -132,11 +132,13 @@ module.exports = {
                         connection.disconnect();
                         sublist.delete(message.guild.id);
                         queue.length = 0;
+                        message.channel.send('Finished Playing...');
                     };
                 } else {
                     subscription.unsubscribe();
                     connection.disconnect();
                     sublist.delete(message.guild.id);
+                    message.channel.send('Finished Playing...');
                 }
             })
         } else if(!message.member.voice.channel) {
