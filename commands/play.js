@@ -48,7 +48,7 @@ module.exports = {
 	perms: [],
 	args: true,
 	async execute(message, args) {
-        const { sublist } = await import('../sublist.mjs');
+        const { sublist, queue } = await import('../sublist.mjs');
         if(message.member.voice.channel && message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
             let sp;
             const channel = message.member.voice.channel;
@@ -62,7 +62,28 @@ module.exports = {
             if(!sublist.get(message.guild.id)) {
                 message.channel.send('Starting Player...').then(msg => { sp = msg.id })
             } else {
-
+                let list = queue.find(queue => queue.active === true);
+                
+                if(list) {
+                    if(list.queued.find(item => item.url === args[0])) {
+                        return message.channel.send('Item already in queue.');
+                    } else {
+                        list.queued.push({
+                            url: args[0],
+                            requester: message.member.displayName
+                        })
+                        return message.channel.send('Debug Message: Added New Item.');
+                    }
+                } else {
+                    queue.push({
+                        active: true,
+                        queued: [{
+                            url: args[0],
+                            requester: message.member.displayName 
+                        }]
+                    });
+                    return message.channel.send('Debug Message: Added First Item.');
+                }
             };
 
             const player = createAudioPlayer({
