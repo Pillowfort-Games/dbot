@@ -1,7 +1,8 @@
 const { raw } = require('youtube-dl-exec');
 const ytdl = require('ytdl-core-discord');
 const ytsearch = require('@citoyasha/yt-search');
-const { MessageEmbed } = require('discord.js');
+const emoji = require('node-emoji');
+const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
 const { AudioPlayerStatus, joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, createAudioResource, demuxProbe } = require('@discordjs/voice');
 
 function createYTDLAudioResource(url) {
@@ -144,16 +145,32 @@ module.exports = {
             })
         } else if (!message.member.voice.channel) {
             message.channel.send('Please be in a voice channel to use this command.');
-        } else if (message.member.voice.channel.type === 'GUILD_VOICE' && !check(args[0]) && args.length > 3) {
+        } else if (message.member.voice.channel.type === 'GUILD_VOICE' && args[0].length > 3 && !check(args[0])) {
             let searchstring = args.join(' ');
-            console.log(searchstring);
 
             // Searches Youtube for the 5 top video results according to the string.
-            ytsearch.search(searchstring, 5).then(results => {
-                console.log(results);
-            });
+            ytsearch.search(searchstring, 5).then(async results => {
+                const embi = new MessageEmbed()
+                    .setColor('#A30DAC')
+                    .setDescription('Here are the top 5 results:');
 
-            message.channel.send('Placeholder');
+                const row = new MessageActionRow();
+
+                let num = 1;
+
+                for (const item of results) {
+                    embi.addFields({ name:  num + '. ' + item.title, value: 'https://youtu.be/' + item.id });
+                    row.addComponents(
+                        new MessageButton()
+                            .setCustomId(num + ': ' + item.id)
+                            .setLabel(emoji.get(num === 1 ? 'one' : num === 2 ? 'two' : num === 3 ? 'three' : num === 4 ? 'four' : num === 5 ? 'five' : ''))
+                            .setStyle('SECONDARY')
+                    );
+                    num++;
+                };
+
+                message.channel.send({ embeds: [embi], components: [row] });
+            });
         } else if (message.member.voice.channel.type === 'GUILD_VOICE' && !check(args[0])){
             message.channel.send('You didn\'t provide a valid youtube url.');
         }
