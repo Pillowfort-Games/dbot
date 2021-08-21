@@ -179,8 +179,7 @@ module.exports = {
                     };
 
                     msg.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 15000 }).then(i => {
-                        result = 'https://www.youtube.com/watch?v=' + i.customId;
-                        play(message, 2, result);
+                        play(message, 2, 'https://www.youtube.com/watch?v=' + i.customId);
                         msg.delete();
                     });
                 });
