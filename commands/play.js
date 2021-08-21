@@ -178,7 +178,7 @@ module.exports = {
                         return i.user.id === message.author.id;
                     };
 
-                    msg.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 15000 }).then(i => {
+                    msg.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 5000 }).then(i => {
                         play(message, 2, 'https://www.youtube.com/watch?v=' + i.customId);
                         msg.delete();
                     });
