@@ -51,7 +51,7 @@ module.exports = {
     args: true,
     async execute(message, args) {
         const { sublist, queue } = await import('../sublist.mjs');
-        if(message.member.voice.channel && message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
+        async function play(message, type, uri) {
             let sp;
             let list = queue.find(queue => queue.active === true);
 
@@ -67,11 +67,11 @@ module.exports = {
                 message.channel.send('Starting Player...').then(msg => { sp = msg.id })
             } else {
                 if (list) {
-                    if (list.queued.find(item => item.url === args[0])) {
+                    if (list.queued.find(item => item.url === args[0]) || list.queued.find(item => item.url === uri)) {
                         return message.channel.send('Item already in queue.');
                     } else {
                         list.queued.push({
-                            url: args[0],
+                            url: type === 1 ? args[0] : uri,
                             requester: message.member.displayName
                         })
                         return message.channel.send('Debug Message: Added New Item.');
@@ -80,7 +80,7 @@ module.exports = {
                     queue.push({
                         active: true,
                         queued: [{
-                            url: args[0],
+                            url: type === 1 ? args[0] : uri,
                             requester: message.member.displayName 
                         }]
                     });
@@ -93,16 +93,16 @@ module.exports = {
                     noSubscriber: NoSubscriberBehavior.Pause,
                 },
             });
-            const resource = await createYTDLAudioResource(args[0]);
+            const resource = await createYTDLAudioResource(type === 1 ? args[0] : uri);
 
             player.on(AudioPlayerStatus.Buffering, async playerstate => {
                 let list = queue.find(queue => queue.active === true);
                 if (!list) {
-                    ytdl.getInfo(args[0]).then(info => {
+                    ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
                         message.channel.messages.fetch(sp).then(oldmsg => {
                             const embi = new MessageEmbed()
                                 .setColor('#A30DAC')
-                                .setDescription(`Now Playing: [${info.videoDetails.title}](${args[0]}) requested by ${message.member.displayName}`);
+                                .setDescription(`Now Playing: [${info.videoDetails.title}](${type === 1 ? args[0] : uri}) requested by ${message.member.displayName}`);
 
                             oldmsg.delete().then(msg => { message.channel.send({ embeds: [embi] }) });
                         });
@@ -143,6 +143,9 @@ module.exports = {
                     message.channel.send('Finished Playing...');
                 }
             })
+        };
+        if(message.member.voice.channel && message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
+            play(message, 1);
         } else if (!message.member.voice.channel) {
             message.channel.send('Please be in a voice channel to use this command.');
         } else if (message.member.voice.channel.type === 'GUILD_VOICE' && args[0].length > 3 && !check(args[0])) {
@@ -169,7 +172,19 @@ module.exports = {
                     num++;
                 };
 
-                message.channel.send({ embeds: [embi], components: [row] });
+                message.channel.send({ embeds: [embi], components: [row] }).then(msg => {
+                    const filter = i => {
+                        i.deferUpdate();
+                        return i.user.id === message.author.id;
+                    };
+                    
+                    msg.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 15000 }).then(i => {
+                        let result = i.customId.split(': ')[1];
+                        result = 'https://www.youtube.com/watch?v=' + result;
+                        play(message, 2, result);
+                        msg.delete();
+                    });
+                });
             });
         } else if (message.member.voice.channel.type === 'GUILD_VOICE' && !check(args[0])){
             message.channel.send('You didn\'t provide a valid youtube url.');
