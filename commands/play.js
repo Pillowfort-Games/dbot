@@ -1,5 +1,6 @@
 const { raw } = require('youtube-dl-exec');
 const ytdl = require('ytdl-core-discord');
+const ytsearch = require('@citoyasha/yt-search');
 const { MessageEmbed } = require('discord.js');
 const { AudioPlayerStatus, joinVoiceChannel, createAudioPlayer, NoSubscriberBehavior, createAudioResource, demuxProbe } = require('@discordjs/voice');
 
@@ -13,7 +14,7 @@ function createYTDLAudioResource(url) {
                 f: 'bestaudio[ext=webm+acodec=opus+asr=48000]/bestaudio',
                 r: '100K',
             },
-            { stdio: ['ignore', 'pipe', 'ignore'] },
+            { stdio: ['ignore', 'pipe', 'ignore'] }
         );
         if (!process.stdout) {
             reject(new Error('No stdout'));
@@ -37,7 +38,7 @@ function createYTDLAudioResource(url) {
 
 function check(url) {
     var youtube = /^(https?\:\/\/)?(www\.)?(youtube\.com|youtu\.?be)\/.+$/
-    if(youtube.test(url)) return true
+    if (youtube.test(url)) return true
     return false
 }
 
@@ -61,11 +62,11 @@ module.exports = {
                 adapterCreator: channel.guild.voiceAdapterCreator,
             });
 
-            if(!sublist.get(message.guild.id)) {
+            if (!sublist.get(message.guild.id)) {
                 message.channel.send('Starting Player...').then(msg => { sp = msg.id })
             } else {
-                if(list) {
-                    if(list.queued.find(item => item.url === args[0])) {
+                if (list) {
+                    if (list.queued.find(item => item.url === args[0])) {
                         return message.channel.send('Item already in queue.');
                     } else {
                         list.queued.push({
@@ -95,7 +96,7 @@ module.exports = {
 
             player.on(AudioPlayerStatus.Buffering, async playerstate => {
                 let list = queue.find(queue => queue.active === true);
-                if(!list) {
+                if (!list) {
                     ytdl.getInfo(args[0]).then(info => {
                         message.channel.messages.fetch(sp).then(oldmsg => {
                             const embi = new MessageEmbed()
@@ -123,8 +124,8 @@ module.exports = {
             sublist.set(message.guild.id, subscription);
             player.on(AudioPlayerStatus.Idle, async playerstate => {
                 let list = queue.find(queue => queue.active === true);
-                if(list) {
-                    if(list.queued.length > 0) {
+                if (list) {
+                    if (list.queued.length > 0) {
                         const resource = await createYTDLAudioResource(list.queued[0].url);
                         player.play(resource);
                     } else {
@@ -141,10 +142,20 @@ module.exports = {
                     message.channel.send('Finished Playing...');
                 }
             })
-        } else if(!message.member.voice.channel) {
+        } else if (!message.member.voice.channel) {
             message.channel.send('Please be in a voice channel to use this command.');
-        } else if(message.member.voice.channel.type === 'GUILD_VOICE' && !check(args[0])) {
+        } else if (message.member.voice.channel.type === 'GUILD_VOICE' && !check(args[0]) && args.length > 3) {
+            let searchstring = args.join(' ');
+            console.log(searchstring);
+
+            // Searches Youtube for the 5 top video results according to the string.
+            ytsearch.search(searchstring, 5).then(results => {
+                console.log(results);
+            });
+
+            message.channel.send('Placeholder');
+        } else if (message.member.voice.channel.type === 'GUILD_VOICE' && !check(args[0])){
             message.channel.send('You didn\'t provide a valid youtube url.');
-        };
+        }
 	}
 };
