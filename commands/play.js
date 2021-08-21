@@ -43,11 +43,11 @@ function check(url) {
 }
 
 module.exports = {
-	name: 'Play',
-	description: 'Play a youtube video in voice channel',
-	hide: false,
-	perms: [],
-	args: true,
+    name: 'Play',
+    description: 'Play a youtube video in voice channel',
+    hide: false,
+    perms: [],
+    args: true,
     async execute(message, args) {
         const { sublist, queue } = await import('../sublist.mjs');
         if(message.member.voice.channel && message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
