@@ -165,7 +165,7 @@ module.exports = {
                     embi.addFields({ name:  num + '. ' + item.title, value: 'https://youtu.be/' + item.id });
                     row.addComponents(
                         new MessageButton()
-                            .setCustomId(num + ': ' + item.id)
+                            .setCustomId(item.id)
                             .setLabel(emoji.get(num === 1 ? 'one' : num === 2 ? 'two' : num === 3 ? 'three' : num === 4 ? 'four' : num === 5 ? 'five' : ''))
                             .setStyle('SECONDARY')
                     );
@@ -177,10 +177,9 @@ module.exports = {
                         i.deferUpdate();
                         return i.user.id === message.author.id;
                     };
-                    
+
                     msg.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 15000 }).then(i => {
-                        let result = i.customId.split(': ')[1];
-                        result = 'https://www.youtube.com/watch?v=' + result;
+                        result = 'https://www.youtube.com/watch?v=' + i.customId;
                         play(message, 2, result);
                         msg.delete();
                     });
