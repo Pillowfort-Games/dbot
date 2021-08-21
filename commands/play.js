@@ -48,7 +48,7 @@ module.exports = {
 	hide: false,
 	perms: [],
 	args: true,
-	async execute(message, args) {
+    async execute(message, args) {
         const { sublist, queue } = await import('../sublist.mjs');
         if(message.member.voice.channel && message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
             let sp;
@@ -157,5 +157,5 @@ module.exports = {
         } else if (message.member.voice.channel.type === 'GUILD_VOICE' && !check(args[0])){
             message.channel.send('You didn\'t provide a valid youtube url.');
         }
-	}
+    }
 };
