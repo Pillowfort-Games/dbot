@@ -107,7 +107,7 @@ module.exports = {
             sublist.set(message.guild.id, subscription);
             player.on('stateChange', async ( opstate, npstate ) => {
                 let list = queue.find(queue => queue.active === true);
-                if (npstate.status === AudioPlayerStatus.Playing) {
+                if (npstate.status === AudioPlayerStatus.Playing && opstate.status != AudioPlayerStatus.Paused) {
                     if (!list) {
                         ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
                             message.channel.messages.fetch(sp).then(oldmsg => {
