@@ -12,6 +12,7 @@ module.exports = {
         if(message.member.voice.channel.type === 'GUILD_VOICE' && connection) {
             const sub = sublist.get(message.guild.id);
             sub.player.unpause();
+			message.channel.send('Player has been resumed.');
         }
 	}
 };
