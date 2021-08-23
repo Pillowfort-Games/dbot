@@ -95,52 +95,51 @@ module.exports = {
             });
             const resource = await createYTDLAudioResource(type === 1 ? args[0] : uri);
 
-            player.on(AudioPlayerStatus.Buffering, async playerstate => {
-                let list = queue.find(queue => queue.active === true);
-                if (!list) {
-                    ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
-                        message.channel.messages.fetch(sp).then(oldmsg => {
-                            const embi = new MessageEmbed()
-                                .setColor('#A30DAC')
-                                .setDescription(`Now Playing: [${info.videoDetails.title}](${type === 1 ? args[0] : uri}) requested by ${message.member.displayName}`);
-
-                            oldmsg.delete().then(msg => { message.channel.send({ embeds: [embi] }) });
-                        });
-                    });
-                } else {
-                    ytdl.getInfo(list.queued[0].url).then(info => {
-                        const embi = new MessageEmbed()
-                            .setColor('#A30DAC')
-                            .setDescription(`Now Playing: [${info.videoDetails.title}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
-                        
-                        list.queued.shift();
-                        return message.channel.send({ embeds: [embi] });
-                    });
-                }
-            });
-
             player.play(resource);
 
             const subscription = connection.subscribe(player);
             sublist.set(message.guild.id, subscription);
-            player.on(AudioPlayerStatus.Idle, async playerstate => {
+            player.on('stateChange', async ( opstate, npstate ) => {
                 let list = queue.find(queue => queue.active === true);
-                if (list) {
-                    if (list.queued.length > 0) {
-                        const resource = await createYTDLAudioResource(list.queued[0].url);
-                        player.play(resource);
+                if (npstate.status === AudioPlayerStatus.Playing) {
+                    if (!list) {
+                        ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
+                            message.channel.messages.fetch(sp).then(oldmsg => {
+                                const embi = new MessageEmbed()
+                                    .setColor('#A30DAC')
+                                    .setDescription(`Now Playing: [${info.videoDetails.title}](${type === 1 ? args[0] : uri}) requested by ${message.member.displayName}`);
+    
+                                oldmsg.delete().then(msg => { message.channel.send({ embeds: [embi] }) });
+                            });
+                        });
+                    } else {
+                        ytdl.getInfo(list.queued[0].url).then(info => {
+                            const embi = new MessageEmbed()
+                                .setColor('#A30DAC')
+                                .setDescription(`Now Playing: [${info.videoDetails.title}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
+                            
+                            list.queued.shift();
+                            return message.channel.send({ embeds: [embi] });
+                        });
+                    }
+                } else if (npstate.status === AudioPlayerStatus.Idle && opstate.status !== AudioPlayerStatus.Idle) {
+                    if (list) {
+                        if (list.queued.length > 0) {
+                            const resource = await createYTDLAudioResource(list.queued[0].url);
+                            player.play(resource);
+                        } else {
+                            subscription.unsubscribe();
+                            connection.disconnect();
+                            sublist.delete(message.guild.id);
+                            queue.length = 0;
+                            message.channel.send('Finished Playing...');
+                        };
                     } else {
                         subscription.unsubscribe();
                         connection.disconnect();
                         sublist.delete(message.guild.id);
-                        queue.length = 0;
                         message.channel.send('Finished Playing...');
-                    };
-                } else {
-                    subscription.unsubscribe();
-                    connection.disconnect();
-                    sublist.delete(message.guild.id);
-                    message.channel.send('Finished Playing...');
+                    }
                 }
             })
         };
