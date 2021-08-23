@@ -76,8 +76,8 @@ module.exports = {
                                 url: type === 1 ? args[0] : uri,
                                 requester: message.member.displayName
                             })
-                            return message.channel.send('Debug Message: Added New Item.');
                         })
+                        return message.channel.send('Debug Message: Added New Item.');
                     }
                 } else {
                     ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
@@ -89,8 +89,8 @@ module.exports = {
                                 requester: message.member.displayName 
                             }]
                         });
-                        return message.channel.send('Debug Message: Added First Item.');
                     })
+                    return message.channel.send('Debug Message: Added First Item.');
                 }
             };
 
