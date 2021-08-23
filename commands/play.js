@@ -70,21 +70,27 @@ module.exports = {
                     if (list.queued.find(item => item.url === args[0]) || list.queued.find(item => item.url === uri)) {
                         return message.channel.send('Item already in queue.');
                     } else {
-                        list.queued.push({
-                            url: type === 1 ? args[0] : uri,
-                            requester: message.member.displayName
+                        ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
+                            list.queued.push({
+                                name: info.videoDetails.title,
+                                url: type === 1 ? args[0] : uri,
+                                requester: message.member.displayName
+                            })
+                            return message.channel.send('Debug Message: Added New Item.');
                         })
-                        return message.channel.send('Debug Message: Added New Item.');
                     }
                 } else {
-                    queue.push({
-                        active: true,
-                        queued: [{
-                            url: type === 1 ? args[0] : uri,
-                            requester: message.member.displayName 
-                        }]
-                    });
-                    return message.channel.send('Debug Message: Added First Item.');
+                    ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
+                        queue.push({
+                            active: true,
+                            queued: [{
+                                name: info.videoDetails.title,
+                                url: type === 1 ? args[0] : uri,
+                                requester: message.member.displayName 
+                            }]
+                        });
+                        return message.channel.send('Debug Message: Added First Item.');
+                    })
                 }
             };
 
