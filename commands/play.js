@@ -119,14 +119,12 @@ module.exports = {
                             });
                         });
                     } else {
-                        ytdl.getInfo(list.queued[0].url).then(info => {
-                            const embi = new MessageEmbed()
-                                .setColor('#A30DAC')
-                                .setDescription(`Now Playing: [${info.videoDetails.title}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
+                        const embi = new MessageEmbed()
+                            .setColor('#A30DAC')
+                            .setDescription(`Now Playing: [${list.queued[0].name}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
                             
-                            list.queued.shift();
-                            return message.channel.send({ embeds: [embi] });
-                        });
+                        list.queued.shift();
+                        return message.channel.send({ embeds: [embi] });
                     }
                 } else if (npstate.status === AudioPlayerStatus.Idle && opstate.status !== AudioPlayerStatus.Idle) {
                     if (list) {
