@@ -76,8 +76,12 @@ module.exports = {
                                 url: type === 1 ? args[0] : uri,
                                 requester: message.member.displayName
                             })
+                            const embi = new MessageEmbed()
+                                .setColor('#A30DAC')
+                                .setDescription(`Added [${info.videoDetails.title}](${type === 1 ? args[0] : uri}) to the queue.`);
+                            message.channel.send({ embeds: [embi] });
                         })
-                        return message.channel.send('Debug Message: Added New Item.');
+                        return;
                     }
                 } else {
                     ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
@@ -89,8 +93,12 @@ module.exports = {
                                 requester: message.member.displayName 
                             }]
                         });
+                        const embi = new MessageEmbed()
+                            .setColor('#A30DAC')
+                            .setDescription(`Added [${info.videoDetails.title}](${type === 1 ? args[0] : uri}) to the queue.`);
+                        message.channel.send({ embeds: [embi] });
                     })
-                    return message.channel.send('Debug Message: Added First Item.');
+                    return;
                 }
             };
 
