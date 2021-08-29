@@ -155,7 +155,7 @@ module.exports = {
                     message.channel.send({ embeds: [embi] });
                 })
             } else {
-                play(message, 1);
+                await play(message, 1);
             }
         } else if (!message.member.voice.channel) {
             message.channel.send('Please be in a voice channel to use this command.');
@@ -190,7 +190,7 @@ module.exports = {
                     };
 
                     msg.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 5000 }).then(i => {
-                        play(message, 2, 'https://www.youtube.com/watch?v=' + i.customId);
+                        await play(message, 2, 'https://www.youtube.com/watch?v=' + i.customId);
                         msg.delete();
                     }).catch(e => {
                         console.log('Interaction timeout.');
