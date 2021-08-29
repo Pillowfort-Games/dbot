@@ -106,10 +106,10 @@ module.exports = {
                 });
                 const resource = await createYTDLAudioResource(type === 1 ? args[0] : uri);
 
-                resolve(player.play(resource));
+                player.play(resource);
 
                 const subscription = connection.subscribe(player);
-                sublist.set(message.guild.id, subscription);
+                resolve(sublist.set(message.guild.id, subscription));
                 player.on('stateChange', async ( opstate, npstate ) => {
                     let list = queue.find(queue => queue.active === true);
                     if (npstate.status === AudioPlayerStatus.Playing && opstate.status != AudioPlayerStatus.Paused) {
@@ -121,9 +121,9 @@ module.exports = {
                                 
                         list.queued.shift();
                         if (lm.author.id === '876492893873918003' && lm.embeds[0]) {
-                            return resolve(lm.edit({ embeds: [embi] }));
+                            return lm.edit({ embeds: [embi] });
                         } else {
-                            return resolve(message.channel.send({ embeds: [embi] }));
+                            return message.channel.send({ embeds: [embi] });
                         }
                     } else if (npstate.status === AudioPlayerStatus.Idle && opstate.status !== AudioPlayerStatus.Idle) {
                         if (list.queued.length > 0) {
