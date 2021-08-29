@@ -1,5 +1,6 @@
 const { raw } = require('youtube-dl-exec');
 const ytdl = require('ytdl-core-discord');
+const ytfps = require('ytfps');
 const ytsearch = require('@citoyasha/yt-search');
 const emoji = require('node-emoji');
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
@@ -64,39 +65,34 @@ module.exports = {
             });
 
             if (!sublist.get(message.guild.id)) {
+                sublist.set(message.guild.id, 'pending');
+                ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
+                    queue.push({
+                        active: true,
+                        queued: [{
+                            name: info.videoDetails.title,
+                            url: type === 1 ? args[0] : uri,
+                            requester: message.member.displayName
+                        }]
+                    })
+                });
                 message.channel.send('Starting Player...').then(msg => { sp = msg.id })
             } else {
-                if (list) {
-                    if (list.queued.find(item => item.url === args[0]) || list.queued.find(item => item.url === uri)) {
-                        return message.channel.send('Item already in queue.');
-                    } else {
-                        ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
-                            list.queued.push({
-                                name: info.videoDetails.title,
-                                url: type === 1 ? args[0] : uri,
-                                requester: message.member.displayName
-                            })
+                if (list.queued.find(item => item.url === args[0]) || list.queued.find(item => item.url === uri)) {
+                    return message.channel.send('Item already in queue.');
+                } else {
+                    ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
+                        list.queued.push({
+                            name: info.videoDetails.title,
+                            url: type === 1 ? args[0] : uri,
+                            requester: message.member.displayName
+                        })
+                        if(type !== 3) {
                             const embi = new MessageEmbed()
                                 .setColor('#A30DAC')
                                 .setDescription(`Added [${info.videoDetails.title}](${type === 1 ? args[0] : uri}) to the queue.`);
                             message.channel.send({ embeds: [embi] });
-                        })
-                        return;
-                    }
-                } else {
-                    ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
-                        queue.push({
-                            active: true,
-                            queued: [{
-                                name: info.videoDetails.title,
-                                url: type === 1 ? args[0] : uri,
-                                requester: message.member.displayName 
-                            }]
-                        });
-                        const embi = new MessageEmbed()
-                            .setColor('#A30DAC')
-                            .setDescription(`Added [${info.videoDetails.title}](${type === 1 ? args[0] : uri}) to the queue.`);
-                        message.channel.send({ embeds: [embi] });
+                        }
                     })
                     return;
                 }
@@ -116,50 +112,52 @@ module.exports = {
             player.on('stateChange', async ( opstate, npstate ) => {
                 let list = queue.find(queue => queue.active === true);
                 if (npstate.status === AudioPlayerStatus.Playing && opstate.status != AudioPlayerStatus.Paused) {
-                    if (!list) {
-                        ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
-                            message.channel.messages.fetch(sp).then(oldmsg => {
-                                const embi = new MessageEmbed()
-                                    .setColor('#A30DAC')
-                                    .setDescription(`Now Playing: [${info.videoDetails.title}](${type === 1 ? args[0] : uri}) requested by ${message.member.displayName}`);
-    
-                                oldmsg.delete().then(msg => { message.channel.send({ embeds: [embi] }) });
-                            });
-                        });
-                    } else {
-                        const embi = new MessageEmbed()
-                            .setColor('#A30DAC')
-                            .setDescription(`Now Playing: [${list.queued[0].name}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
+                    if(sp) message.channel.messages.fetch(sp).then(oldmsg => { oldmsg.delete(); sp = null; });
+
+                    const embi = new MessageEmbed()
+                        .setColor('#A30DAC')
+                        .setDescription(`Now Playing: [${list.queued[0].name}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
                             
-                        list.queued.shift();
-                        return message.channel.send({ embeds: [embi] });
-                    }
+                    list.queued.shift();
+                    return message.channel.send({ embeds: [embi] });
                 } else if (npstate.status === AudioPlayerStatus.Idle && opstate.status !== AudioPlayerStatus.Idle) {
-                    if (list) {
-                        if (list.queued.length > 0) {
-                            const resource = await createYTDLAudioResource(list.queued[0].url);
-                            player.play(resource);
-                        } else {
-                            subscription.unsubscribe();
-                            connection.disconnect();
-                            sublist.delete(message.guild.id);
-                            queue.length = 0;
-                            message.channel.send('Finished Playing...');
-                        };
+                    if (list.queued.length > 0) {
+                        const resource = await createYTDLAudioResource(list.queued[0].url);
+                        player.play(resource);
                     } else {
                         subscription.unsubscribe();
                         connection.disconnect();
                         sublist.delete(message.guild.id);
+                        queue.length = 0;
                         message.channel.send('Finished Playing...');
-                    }
+                    };
                 }
             })
         };
         if(message.member.voice.channel && message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
-            play(message, 1);
+            if(args[0].includes('playlist')) {
+                ytfps(args[0]).then(async content => {
+                    function waitfor(ms)  {
+                        return new Promise( resolve => { setTimeout(resolve, ms); });
+                    }
+
+                    for (let i = 0; i < content['videos'].length; i++) {
+                        play(message, 3, content['videos'][i].url);
+                        if (i === 0) await waitfor(1500);
+                    }
+
+                    const embi = new MessageEmbed()
+                        .setColor('#A30DAC')
+                        .setDescription(`Added ${content['video_count']} videos from [${content['title']}](${args[0]})`);
+                            
+                    message.channel.send({ embeds: [embi] });
+                })
+            } else {
+                play(message, 1);
+            }
         } else if (!message.member.voice.channel) {
             message.channel.send('Please be in a voice channel to use this command.');
-        } else if (message.member.voice.channel.type === 'GUILD_VOICE' && args[0].length > 3 && !check(args[0])) {
+        } else if (message.member.voice.channel.type === 'GUILD_VOICE' && args[0].length >= 3 && !check(args[0])) {
             let searchstring = args.join(' ');
 
             // Searches Youtube for the 5 top video results according to the string.
@@ -192,6 +190,8 @@ module.exports = {
                     msg.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 5000 }).then(i => {
                         play(message, 2, 'https://www.youtube.com/watch?v=' + i.customId);
                         msg.delete();
+                    }).catch(e => {
+                        console.log('Interaction timeout.');
                     });
                 });
             });
