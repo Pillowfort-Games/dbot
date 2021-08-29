@@ -113,14 +113,18 @@ module.exports = {
                 player.on('stateChange', async ( opstate, npstate ) => {
                     let list = queue.find(queue => queue.active === true);
                     if (npstate.status === AudioPlayerStatus.Playing && opstate.status != AudioPlayerStatus.Paused) {
-                        if(sp) message.channel.messages.fetch(sp).then(oldmsg => { oldmsg.delete(); sp = null; });
-
+                        if (sp) message.channel.messages.fetch(sp).then(oldmsg => { oldmsg.delete(); sp = null; });
+                        const lm = message.channel.lastMessage;
                         const embi = new MessageEmbed()
                             .setColor('#A30DAC')
                             .setDescription(`Now Playing: [${list.queued[0].name}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
                                 
                         list.queued.shift();
-                        return resolve(message.channel.send({ embeds: [embi] }));
+                        if (lm.author.id === '876492893873918003' && lm.embeds[0]) {
+                            return resolve(lm.edit({ embeds: [embi] }));
+                        } else {
+                            return resolve(message.channel.send({ embeds: [embi] }));
+                        }
                     } else if (npstate.status === AudioPlayerStatus.Idle && opstate.status !== AudioPlayerStatus.Idle) {
                         if (list.queued.length > 0) {
                             const resource = await createYTDLAudioResource(list.queued[0].url);
@@ -189,7 +193,7 @@ module.exports = {
                         return i.user.id === message.author.id;
                     };
 
-                    msg.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 5000 }).then(i => {
+                    msg.awaitMessageComponent({ filter, componentType: 'BUTTON', time: 5000 }).then(async i => {
                         await play(message, 2, 'https://www.youtube.com/watch?v=' + i.customId);
                         msg.delete();
                     }).catch(e => {
