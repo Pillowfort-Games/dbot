@@ -52,86 +52,88 @@ module.exports = {
     args: true,
     async execute(message, args) {
         const { sublist, queue } = await import('../sublist.mjs');
-        async function play(message, type, uri) {
-            let sp;
-            let list = queue.find(queue => queue.active === true);
-
-            const channel = message.member.voice.channel;
-
-            const connection = joinVoiceChannel({
-                channelId: channel.id,
-                guildId: channel.guild.id,
-                adapterCreator: channel.guild.voiceAdapterCreator,
-            });
-
-            if (!sublist.get(message.guild.id)) {
-                sublist.set(message.guild.id, 'pending');
-                ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
-                    queue.push({
-                        active: true,
-                        queued: [{
-                            name: info.videoDetails.title,
-                            url: type === 1 ? args[0] : uri,
-                            requester: message.member.displayName
-                        }]
-                    })
-                });
-                message.channel.send('Starting Player...').then(msg => { sp = msg.id })
-            } else {
-                if (list.queued.find(item => item.url === args[0]) || list.queued.find(item => item.url === uri)) {
-                    return message.channel.send('Item already in queue.');
-                } else {
-                    ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
-                        list.queued.push({
-                            name: info.videoDetails.title,
-                            url: type === 1 ? args[0] : uri,
-                            requester: message.member.displayName
-                        })
-                        if(type !== 3) {
-                            const embi = new MessageEmbed()
-                                .setColor('#A30DAC')
-                                .setDescription(`Added [${info.videoDetails.title}](${type === 1 ? args[0] : uri}) to the queue.`);
-                            message.channel.send({ embeds: [embi] });
-                        }
-                    })
-                    return;
-                }
-            };
-
-            const player = createAudioPlayer({
-                behaviors: {
-                    noSubscriber: NoSubscriberBehavior.Pause,
-                },
-            });
-            const resource = await createYTDLAudioResource(type === 1 ? args[0] : uri);
-
-            player.play(resource);
-
-            const subscription = connection.subscribe(player);
-            sublist.set(message.guild.id, subscription);
-            player.on('stateChange', async ( opstate, npstate ) => {
+        function play(message, type, uri) {
+            return new Promise(async (resolve, reject) => {
+                let sp;
                 let list = queue.find(queue => queue.active === true);
-                if (npstate.status === AudioPlayerStatus.Playing && opstate.status != AudioPlayerStatus.Paused) {
-                    if(sp) message.channel.messages.fetch(sp).then(oldmsg => { oldmsg.delete(); sp = null; });
 
-                    const embi = new MessageEmbed()
-                        .setColor('#A30DAC')
-                        .setDescription(`Now Playing: [${list.queued[0].name}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
-                            
-                    list.queued.shift();
-                    return message.channel.send({ embeds: [embi] });
-                } else if (npstate.status === AudioPlayerStatus.Idle && opstate.status !== AudioPlayerStatus.Idle) {
-                    if (list.queued.length > 0) {
-                        const resource = await createYTDLAudioResource(list.queued[0].url);
-                        player.play(resource);
+                const channel = message.member.voice.channel;
+
+                const connection = joinVoiceChannel({
+                    channelId: channel.id,
+                    guildId: channel.guild.id,
+                    adapterCreator: channel.guild.voiceAdapterCreator,
+                });
+
+                if (!sublist.get(message.guild.id)) {
+                    sublist.set(message.guild.id, 'pending');
+                    ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
+                        queue.push({
+                            active: true,
+                            queued: [{
+                                name: info.videoDetails.title,
+                                url: type === 1 ? args[0] : uri,
+                                requester: message.member.displayName
+                            }]
+                        })
+                    });
+                    message.channel.send('Starting Player...').then(msg => { sp = msg.id })
+                } else {
+                    if (list.queued.find(item => item.url === args[0]) || list.queued.find(item => item.url === uri)) {
+                        return resolve(message.channel.send('Item already in queue.'));
                     } else {
-                        subscription.unsubscribe();
-                        connection.disconnect();
-                        sublist.delete(message.guild.id);
-                        queue.length = 0;
-                        message.channel.send('Finished Playing...');
-                    };
-                }
+                        ytdl.getInfo(type === 1 ? args[0] : uri).then(info => {
+                            list.queued.push({
+                                name: info.videoDetails.title,
+                                url: type === 1 ? args[0] : uri,
+                                requester: message.member.displayName
+                            })
+                            if(type !== 3) {
+                                const embi = new MessageEmbed()
+                                    .setColor('#A30DAC')
+                                    .setDescription(`Added [${info.videoDetails.title}](${type === 1 ? args[0] : uri}) to the queue.`);
+                                message.channel.send({ embeds: [embi] });
+                            }
+                        })
+                        return resolve();
+                    }
+                };
+
+                const player = createAudioPlayer({
+                    behaviors: {
+                        noSubscriber: NoSubscriberBehavior.Pause,
+                    },
+                });
+                const resource = await createYTDLAudioResource(type === 1 ? args[0] : uri);
+
+                resolve(player.play(resource));
+
+                const subscription = connection.subscribe(player);
+                sublist.set(message.guild.id, subscription);
+                player.on('stateChange', async ( opstate, npstate ) => {
+                    let list = queue.find(queue => queue.active === true);
+                    if (npstate.status === AudioPlayerStatus.Playing && opstate.status != AudioPlayerStatus.Paused) {
+                        if(sp) message.channel.messages.fetch(sp).then(oldmsg => { oldmsg.delete(); sp = null; });
+
+                        const embi = new MessageEmbed()
+                            .setColor('#A30DAC')
+                            .setDescription(`Now Playing: [${list.queued[0].name}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
+                                
+                        list.queued.shift();
+                        return resolve(message.channel.send({ embeds: [embi] }));
+                    } else if (npstate.status === AudioPlayerStatus.Idle && opstate.status !== AudioPlayerStatus.Idle) {
+                        if (list.queued.length > 0) {
+                            const resource = await createYTDLAudioResource(list.queued[0].url);
+                            player.play(resource);
+                        } else {
+                            subscription.unsubscribe();
+                            connection.disconnect();
+                            sublist.delete(message.guild.id);
+                            queue.length = 0;
+                            message.channel.send('Finished Playing...');
+                        };
+                    }
+                })
             })
         };
         if(message.member.voice.channel && message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
@@ -142,8 +144,8 @@ module.exports = {
                     }
 
                     for (let i = 0; i < content['videos'].length; i++) {
-                        play(message, 3, content['videos'][i].url);
-                        if (i === 0) await waitfor(1500);
+                        await play(message, 3, content['videos'][i].url);
+                        //if (i === 0) await waitfor(1500);
                     }
 
                     const embi = new MessageEmbed()
