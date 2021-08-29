@@ -143,13 +143,8 @@ module.exports = {
         if(message.member.voice.channel && message.member.voice.channel.type === 'GUILD_VOICE' && check(args[0])) {
             if(args[0].includes('playlist')) {
                 ytfps(args[0]).then(async content => {
-                    function waitfor(ms)  {
-                        return new Promise( resolve => { setTimeout(resolve, ms); });
-                    }
-
-                    for (let i = 0; i < content['videos'].length; i++) {
-                        await play(message, 3, content['videos'][i].url);
-                        //if (i === 0) await waitfor(1500);
+                    for (const vid of content['videos']) {
+                        await play(message, 3, vid.url);
                     }
 
                     const embi = new MessageEmbed()
