@@ -106,10 +106,10 @@ module.exports = {
                 });
                 const resource = await createYTDLAudioResource(type === 1 ? args[0] : uri);
 
-                player.play(resource);
+                resolve(player.play(resource));
 
                 const subscription = connection.subscribe(player);
-                resolve(sublist.set(message.guild.id, subscription));
+                sublist.set(message.guild.id, subscription);
                 player.on('stateChange', async ( opstate, npstate ) => {
                     let list = queue.find(queue => queue.active === true);
                     if (npstate.status === AudioPlayerStatus.Playing && opstate.status != AudioPlayerStatus.Paused) {
