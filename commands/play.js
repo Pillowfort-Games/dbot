@@ -119,7 +119,6 @@ module.exports = {
                             .setColor('#A30DAC')
                             .setDescription(`Now Playing: [${list.queued[0].name}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
                                 
-                        list.queued.shift();
                         if (lm.author.id === '876492893873918003' && lm.embeds[0]) {
                             return lm.edit({ embeds: [embi] });
                         } else {
@@ -127,6 +126,7 @@ module.exports = {
                         }
                     } else if (npstate.status === AudioPlayerStatus.Idle && opstate.status !== AudioPlayerStatus.Idle) {
                         if (list.queued.length > 0) {
+                            list.queued.shift();
                             const resource = await createYTDLAudioResource(list.queued[0].url);
                             player.play(resource);
                         } else {
