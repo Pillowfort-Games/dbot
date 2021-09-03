@@ -125,17 +125,18 @@ module.exports = {
                             return message.channel.send({ embeds: [embi] });
                         }
                     } else if (npstate.status === AudioPlayerStatus.Idle && opstate.status !== AudioPlayerStatus.Idle) {
-                        if (list.queued.length > 0) {
-                            list.queued.shift();
-                            const resource = await createYTDLAudioResource(list.queued[0].url);
-                            player.play(resource);
-                        } else {
+                        list.queued.shift();
+
+                        if (list.queued.length === 0) {
                             subscription.unsubscribe();
                             connection.disconnect();
                             sublist.delete(message.guild.id);
                             queue.length = 0;
                             message.channel.send('Finished Playing...');
                         };
+
+                        const resource = await createYTDLAudioResource(list.queued[0].url);
+                        player.play(resource);
                     }
                 })
             })
