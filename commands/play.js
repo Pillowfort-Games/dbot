@@ -126,9 +126,9 @@ module.exports = {
                         }
                     } else if (npstate.status === AudioPlayerStatus.Idle && opstate.status !== AudioPlayerStatus.Idle) {
                         if (list.queued.length > 0) {
-                            list.queued.shift();
                             const resource = await createYTDLAudioResource(list.queued[0].url);
                             player.play(resource);
+                            list.queued.shift();
                         } else {
                             subscription.unsubscribe();
                             connection.disconnect();
