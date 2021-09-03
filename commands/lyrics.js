@@ -10,7 +10,7 @@ module.exports = {
         const { queue } = await import('../sublist.mjs');
         let active = queue.find(queue => queue.active === true);
         if (active) {
-            lyricsParse(queue.queued[0].name).then(async lyrics => {
+            lyricsParse(active.queued[0].name).then(async lyrics => {
                 if (lyrics) {
                     const embi = new MessageEmbed()
                         .setColor('#A30DAC')
