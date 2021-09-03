@@ -1,6 +1,6 @@
 const { raw } = require('youtube-dl-exec');
 const ytdl = require('ytdl-core-discord');
-const ytfps = require('ytfps');
+const ytfps = require('@maroxy/ytfps');
 const ytsearch = require('@citoyasha/yt-search');
 const emoji = require('node-emoji');
 const { MessageEmbed, MessageActionRow, MessageButton } = require('discord.js');
