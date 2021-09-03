@@ -16,7 +16,7 @@ module.exports = {
                     const embi = new MessageEmbed()
                         .setColor('#A30DAC')
                         .setDescription(lyric)
-                        .setFooter('Provided by Genius/Google', 'https://assets.genius.com/images/default-api-app-image.png');
+                        .setFooter('Provided by Genius', 'https://assets.genius.com/images/default-api-app-image.png');
                     message.channel.send({ embeds: [embi] });
                 } else {
                     const embi = new MessageEmbed()
