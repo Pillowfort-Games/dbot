@@ -132,7 +132,7 @@ module.exports = {
                             connection.disconnect();
                             sublist.delete(message.guild.id);
                             queue.length = 0;
-                            message.channel.send('Finished Playing...');
+                            return message.channel.send('Finished Playing...');
                         };
 
                         const resource = await createYTDLAudioResource(list.queued[0].url);
