@@ -11,11 +11,10 @@ module.exports = {
         let active = queue.find(queue => queue.active === true);
         if (active) {
             findLyrics(active.queued[0].name).then(async lyrics => {
-                const lyric = lyrics;
-                if (lyric) {
+                if (lyrics) {
                     const embi = new MessageEmbed()
                         .setColor('#A30DAC')
-                        .setDescription(lyric)
+                        .setDescription(lyrics)
                         .setFooter('Provided by Genius', 'https://assets.genius.com/images/default-api-app-image.png');
                     message.channel.send({ embeds: [embi] });
                 } else {
