@@ -120,7 +120,6 @@ module.exports = {
                             .setDescription(`Now Playing: [${list.queued[0].name}](${list.queued[0].url}) requested by ${list.queued[0].requester}`);
                                 
                         if (lm.author.id === '876492893873918003' && lm.embeds[0]) {
-                            console.log(lm.embeds[0].description);
                             if (lm.embeds[0].description.includes('Now Playing:')) return lm.edit({ embeds: [embi] });
                             return message.channel.send({ embeds: [embi] });
                         } else {
