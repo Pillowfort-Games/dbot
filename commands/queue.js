@@ -21,8 +21,8 @@ module.exports = {
             for (let num = 0; num != 5; num++) {
                 if (num === 0) {
                     embi2.setDescription(`[${active.queued[num].name}](${active.queued[num].url})\nRequested by ${active.queued[num].requester}`);
-                } else if(num !== 0 && active.queued.length > 1) {
-                    desc += `${num}. [${active.queued[num].name}](${active.queued[num].url})\nRequested by ${active.queued[num].requester}\n`;
+                } else if(num !== 0 && active.queued.length > 1 && active.queued[num]) {
+                    desc += `${num}. [${active.queued[num].name}](${active.queued[num].url})\nRequested by ${active.queued[num].requester}\n\n`;
                 }
             }
             embi.setDescription(desc);
