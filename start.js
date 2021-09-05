@@ -13,6 +13,7 @@ for (const file of fs.readdirSync('./commands').filter(file => file.endsWith('.j
 
 client.on('ready', client => {
     console.log(`${client.user.username} has logged in.`);
+    client.user.setPresence({ activities: [{ name: 'p!help || MXY Group' }], status: 'online' });
 });
 
 client.on('messageCreate', async message => {
