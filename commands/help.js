@@ -2,8 +2,8 @@ const { MessageEmbed } = require('discord.js');
 const commands = new Map();
 const fs = require('fs');
 
-for (const file of fs.readdirSync('../commands').filter(file => file.endsWith('.js'))) {
-    const command = require(`../commands/${file}`);
+for (const file of fs.readdirSync('.').filter(file => file.endsWith('.js'))) {
+    const command = require(`./${file}`);
     if (!command.hide) return commands.set(command.name.toLowerCase(), command.description);
 };
 
