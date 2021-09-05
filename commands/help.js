@@ -1,11 +1,5 @@
 const { MessageEmbed } = require('discord.js');
-const commands = new Map();
 const fs = require('fs');
-
-for (const file of fs.readdirSync('.').filter(file => file.endsWith('.js'))) {
-    const command = require(`./${file}`);
-    if (!command.hide) return commands.set(command.name.toLowerCase(), command.description);
-};
 
 module.exports = {
     name: 'Help',
@@ -14,12 +8,19 @@ module.exports = {
     perms: [],
     args: false,
     async execute(message, args) {
+        const commands = new Map();
+
+        for (const file of fs.readdirSync('./commands').filter(file => file.endsWith('.js'))) {
+            const command = require(`./${file}`);
+            if (!command.hide) commands.set(command.name.toLowerCase(), command.description);
+        };
+
         const embi = new MessageEmbed()
             .setColor('#A30DAC')
             .setDescription('Commands');
 
-        commands.forEach((cname, cdescription) => {
-            embi.addFields({ name: cname, value: cdescription });
+        commands.forEach((cdescription, cname) => {
+            embi.addFields({ name: `p!${cname}`, value: cdescription });
         });
 
         message.channel.send({ embeds: [embi] });
