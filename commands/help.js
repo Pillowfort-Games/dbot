@@ -1,5 +1,6 @@
 const { MessageEmbed } = require('discord.js');
 const commands = new Map();
+const fs = require('fs');
 
 for (const file of fs.readdirSync('../commands').filter(file => file.endsWith('.js'))) {
     const command = require(`../commands/${file}`);
@@ -20,7 +21,7 @@ module.exports = {
         commands.forEach((cname, cdescription) => {
             embi.addFields({ name: cname, value: cdescription });
         });
-        
+
         message.channel.send({ embeds: [embi] });
     }
 }
