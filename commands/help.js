@@ -17,7 +17,7 @@ module.exports = {
 
         const embi = new MessageEmbed()
             .setColor('#A30DAC')
-            .setDescription('Commands');
+            .setTitle('Commands');
 
         commands.forEach((cdescription, cname) => {
             embi.addFields({ name: `p!${cname}`, value: cdescription });
