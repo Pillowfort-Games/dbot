@@ -18,7 +18,7 @@ module.exports = {
                 .setTitle('Currently Playing')
                 .setColor('#169E54');
 
-            for (let num = 0; num != 5; num++) {
+            for (let num = 0; num != 6; num++) {
                 if (num === 0) {
                     embi2.setDescription(`[${active.queued[num].name}](${active.queued[num].url})\nRequested by ${active.queued[num].requester}`);
                 } else if(num !== 0 && active.queued.length > 1 && active.queued[num]) {
