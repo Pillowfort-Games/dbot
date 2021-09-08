@@ -27,6 +27,7 @@
     "@j0r6it0/lyricsfinder": "^1.1.1",
     "@maroxy/ytfps": "^1.0.6",
     "axios": "^0.21.1",
+    "bilibilicomics-api": "^1.0.5",
     "discord.js": "^13.1.0",
     "dotenv": "^10.0.0",
     "libsodium-wrappers": "^0.7.9",
