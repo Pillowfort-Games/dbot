@@ -10,7 +10,7 @@ module.exports = {
         bilibilicomics.Search(args.join(' ')).then(search => {
             const embi = new MessageEmbed()
                 .setColor('#A30DAC')
-                .setDescription(`By: ${search[0].authors.join(', ')} \n Genres: ${search[0].genres.join(', ')} \n [Open Comic](https://www.bilibilicomics.com/detail/mc${search[0].id})`)
+                .setDescription(`By: ${search[0].authors.join(', ')} \n Genres: ${search[0].genres.join(', ')} \n [Open Comic](${search[0].url})`)
                 .setTitle(search[0].title)
                 .setImage(search[0].hcover)
                 .setFooter('Provided by BiliBiliComics', 'https://www.bilibilicomics.com/static/img/8e821bd00d01e.png');
