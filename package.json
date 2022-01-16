@@ -23,7 +23,7 @@
   "homepage": "https://github.com/Pillowfort-Games/dbot#readme",
   "dependencies": {
     "@citoyasha/yt-search": "^1.0.1",
-    "@discordjs/voice": "^0.6.0",
+    "@discordjs/voice": "^0.7.5",
     "@j0r6it0/lyricsfinder": "^1.1.1",
     "@maroxy/ytfps": "^1.0.6",
     "axios": "^0.21.1",
